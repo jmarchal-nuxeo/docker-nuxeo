@@ -27,7 +27,6 @@ ARG NUXEO_VERSION=9.10
 ARG NUXEO_DIST_URL=http://community.nuxeo.com/static/releases/nuxeo-9.10/nuxeo-server-9.10-tomcat.zip
 ARG NUXEO_MD5=327d23bbd5558565694027b11c0dd82a
 
-
 # Create Nuxeo user
 RUN useradd -m -d /home/$NUXEO_USER -u 1000 -s /bin/bash $NUXEO_USER
 
@@ -44,6 +43,19 @@ RUN curl -fsSL "${NUXEO_DIST_URL}" -o /tmp/nuxeo-distribution-tomcat.zip \
     # For arbitrary user in the admin group
     && chmod g+rwX $NUXEO_HOME/bin/*ctl $NUXEO_HOME/bin/*.sh \
     && $NUXEO_HOME/bin/nuxeoctl mp-init
+
+# SANTANDER..
+ARG NUXEO_S3_ADDON_URL=https://connect.nuxeo.com/nuxeo/site/marketplace/package/amazon-s3-online-storage/download?version=1.8.3
+ARG VAULT_ADDON_URL=https://connect.nuxeo.com/nuxeo/site/marketplace/package/vault-package/download?version=1.0.0-SNAPSHOT
+ARG NUXEO_CONNECT_USERNAME=*******
+ARG NUXEO_CONNECT_PASSWORD=*******
+
+RUN curl -X GET -u $NUXEO_CONNECT_USERNAME:$NUXEO_CONNECT_PASSWORD $NUXEO_S3_ADDON_URL -o /tmp/amazon-s3-online-storage.zip
+RUN $NUXEO_HOME/bin/nuxeoctl mp-add /tmp/amazon-s3-online-storage.zip
+
+RUN curl -X GET -u $NUXEO_CONNECT_USERNAME:$NUXEO_CONNECT_PASSWORD $VAULT_ADDON_URL -o /tmp/vault-package.zip
+RUN $NUXEO_HOME/bin/nuxeoctl mp-add /tmp/vault-package.zip
+# ..SANTANDER
 
 COPY docker-template $NUXEO_HOME/templates/docker
 COPY nuxeo.conf /etc/nuxeo/nuxeo.conf.template
